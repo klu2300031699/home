@@ -14,12 +14,26 @@ const Home = ({ userName, onLogout, onNavigate }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedService, setSelectedService] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [bookedServices, setBookedServices] = useState([]); // Store booked services
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [bookingData, setBookingData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    zipCode: '',
+    serviceDate: '',
+    serviceTime: '',
+    description: '',
+    urgency: 'normal'
+  });
 
   const allServices = [
     {
       id: 1,
       title: 'Professional Plumbing',
-      image: '/welcome.jpg',
+      image: '/plumbing.jpg',
       category: 'Repair',
       badge: 'Popular',
       badgeColor: 'blue',
@@ -32,7 +46,7 @@ const Home = ({ userName, onLogout, onNavigate }) => {
     {
       id: 2,
       title: 'Electrical Services',
-      image: '/welcome.jpg',
+      image: '/electical.jpg',
       category: 'Repair',
       badge: 'Popular',
       badgeColor: 'yellow',
@@ -45,7 +59,7 @@ const Home = ({ userName, onLogout, onNavigate }) => {
     {
       id: 3,
       title: 'Home Deep Cleaning',
-      image: '/welcome.jpg',
+      image: '/deep cleaning.jpg',
       category: 'Cleaning',
       badge: 'Trending',
       badgeColor: 'green',
@@ -58,7 +72,7 @@ const Home = ({ userName, onLogout, onNavigate }) => {
     {
       id: 4,
       title: 'AC & HVAC Services',
-      image: '/welcome.jpg',
+      image: '/ac.jpg',
       category: 'Repair',
       badge: 'Hot',
       badgeColor: 'orange',
@@ -339,6 +353,85 @@ const Home = ({ userName, onLogout, onNavigate }) => {
     setShowDetailModal(false);
     setSelectedService(null);
     document.body.style.overflow = 'auto'; // Restore scroll
+  };
+
+  const handleBookNow = (service) => {
+    setSelectedService(service);
+    setShowBookingModal(true);
+    setShowDetailModal(false);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const handleCloseBookingModal = () => {
+    setShowBookingModal(false);
+    setBookingData({
+      fullName: '',
+      email: '',
+      phone: '',
+      address: '',
+      city: '',
+      zipCode: '',
+      serviceDate: '',
+      serviceTime: '',
+      description: '',
+      urgency: 'normal'
+    });
+    document.body.style.overflow = 'auto';
+  };
+
+  const handleBookingInputChange = (field, value) => {
+    setBookingData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleBookingSubmit = (e) => {
+    e.preventDefault();
+    
+    // Validation
+    if (!bookingData.fullName || !bookingData.email || !bookingData.phone || 
+        !bookingData.address || !bookingData.city || !bookingData.zipCode ||
+        !bookingData.serviceDate || !bookingData.serviceTime || !bookingData.description) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(bookingData.email)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+
+    // Phone validation
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(bookingData.phone.replace(/\D/g, ''))) {
+      alert('Please enter a valid 10-digit phone number');
+      return;
+    }
+
+    // Create booking object
+    const newBooking = {
+      id: Date.now(),
+      service: selectedService,
+      bookingDetails: { ...bookingData },
+      bookingDate: new Date().toLocaleDateString(),
+      status: 'Scheduled',
+      scheduledDate: bookingData.serviceDate,
+      scheduledTime: bookingData.serviceTime
+    };
+
+    // Add to bookings
+    setBookedServices(prev => [...prev, newBooking]);
+
+    // Reset and close
+    handleCloseBookingModal();
+    
+    // Navigate to bookings
+    handleNavigation('bookings');
+    
+    alert('Booking confirmed successfully! Check My Bookings to view details.');
   };
 
   const displayServices = currentPage === 'service' ? allServices : services;
@@ -707,13 +800,129 @@ const Home = ({ userName, onLogout, onNavigate }) => {
       {/* My Bookings Page */}
       {currentPage === 'bookings' && (
         <section className="bookings-section">
-          <div className="section-container">
-            <h2 className="section-title-main">My Bookings</h2>
-            <div className="bookings-content">
-              <p className="empty-state">You don't have any bookings yet. Start booking services to see them here!</p>
-              <button className="cta-button" onClick={() => handleNavigation('service')}>Browse Services</button>
+          {bookedServices.length === 0 ? (
+            // Empty State
+            <div className="bookings-empty-state">
+              <div className="empty-state-content">
+                <div className="empty-state-left">
+                  <h1 className="empty-state-title">Your Bookings</h1>
+                  <p className="empty-state-description">
+                    Track and manage all your service bookings in one place. 
+                    View booking history, upcoming appointments, and service details.
+                  </p>
+                  <button className="cta-button" onClick={() => handleNavigation('service')}>
+                    Browse Services
+                  </button>
+
+                  <div className="empty-state-features">
+                    <div className="empty-feature-card">
+                      <div className="feature-icon">📅</div>
+                      <h3>Easy Scheduling</h3>
+                      <p>Book services at your convenience with flexible scheduling options</p>
+                    </div>
+                    <div className="empty-feature-card">
+                      <div className="feature-icon">🔔</div>
+                      <h3>Real-time Updates</h3>
+                      <p>Get instant notifications about your booking status and provider arrival</p>
+                    </div>
+                    <div className="empty-feature-card">
+                      <div className="feature-icon">⭐</div>
+                      <h3>Service History</h3>
+                      <p>Access your complete service history and re-book your favorite providers</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="empty-state-right">
+                  <div className="empty-state-image-card">
+                    <img src="/welcome.jpg" alt="No Bookings" className="empty-state-image" />
+                  </div>
+                  
+                  <div className="empty-stats-card">
+                    <h3 className="stats-card-title">Why Choose Us</h3>
+                    <div className="stats-list">
+                      <div className="stat-item-vertical">
+                        <span className="stat-icon">✓</span>
+                        <span className="stat-text">Verified & trusted professionals</span>
+                      </div>
+                      <div className="stat-item-vertical">
+                        <span className="stat-icon">✓</span>
+                        <span className="stat-text">Transparent pricing, no hidden fees</span>
+                      </div>
+                      <div className="stat-item-vertical">
+                        <span className="stat-icon">✓</span>
+                        <span className="stat-text">24/7 customer support available</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+          ) : (
+            // Bookings List
+            <div className="section-container">
+              <h2 className="section-title-main">My Bookings</h2>
+              <p className="bookings-subtitle">Manage and track all your scheduled services</p>
+              <div className="bookings-grid">
+                {bookedServices.map((booking) => (
+                  <div key={booking.id} className="booking-card">
+                    <div className="booking-header">
+                      <span className={`booking-status status-${booking.status.toLowerCase()}`}>
+                        {booking.status}
+                      </span>
+                      <span className="booking-date">Booked: {booking.bookingDate}</span>
+                    </div>
+                    
+                    <div className="booking-body">
+                      <div className="booking-image-wrapper">
+                        <img src={booking.service.image} alt={booking.service.title} />
+                      </div>
+                      <div className="booking-details">
+                        <h3 className="booking-service-title">{booking.service.title}</h3>
+                        <p className="booking-category">{booking.service.category}</p>
+                        <p className="booking-price">{booking.service.price}</p>
+                        
+                        <div className="booking-info-row">
+                          <div className="info-item">
+                            <span className="info-icon">📅</span>
+                            <span>{booking.scheduledDate}</span>
+                          </div>
+                          <div className="info-item">
+                            <span className="info-icon">🕒</span>
+                            <span>{booking.scheduledTime}</span>
+                          </div>
+                        </div>
+
+                        <div className="booking-customer-info">
+                          <div className="customer-detail">
+                            <span className="detail-label">Contact:</span>
+                            <span className="detail-value">{booking.bookingDetails.phone}</span>
+                          </div>
+                          <div className="customer-detail">
+                            <span className="detail-label">Location:</span>
+                            <span className="detail-value">{booking.bookingDetails.city}</span>
+                          </div>
+                          <div className="customer-detail">
+                            <span className="detail-label">Urgency:</span>
+                            <span className={`urgency-badge ${booking.bookingDetails.urgency}`}>
+                              {booking.bookingDetails.urgency.charAt(0).toUpperCase() + booking.bookingDetails.urgency.slice(1)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="booking-actions">
+                      <button className="btn-booking-details" onClick={() => handleViewDetails(booking.service)}>
+                        View Details
+                      </button>
+                      <button className="btn-booking-cancel">Cancel Booking</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
       )}
 
@@ -1009,7 +1218,7 @@ const Home = ({ userName, onLogout, onNavigate }) => {
                       </div>
                     </div>
 
-                    <button className="btn-book-now-modal">Book Now</button>
+                    <button className="btn-book-now-modal" onClick={() => handleBookNow(selectedService)}>Book Now</button>
                   </div>
 
                   <div className="modal-questions">
@@ -1022,6 +1231,265 @@ const Home = ({ userName, onLogout, onNavigate }) => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Booking Modal */}
+      {showBookingModal && selectedService && (
+        <div className="booking-modal-overlay" onClick={handleCloseBookingModal}>
+          <div className="booking-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="booking-modal-close-btn" onClick={handleCloseBookingModal}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <path d="M18 6L6 18M6 6l12 12" stroke="#FFFFFF" strokeWidth="3.5" strokeLinecap="round"/>
+              </svg>
+            </button>
+
+            <div className="booking-modal-header">
+              <h2 className="booking-modal-title">Book {selectedService.title}</h2>
+              <p className="booking-modal-subtitle">Fill in the details below to schedule your service</p>
+            </div>
+
+            <form onSubmit={handleBookingSubmit} className="booking-form-content">
+              <div className="booking-form-grid">
+                {/* Personal Information Section */}
+                <div className="booking-section">
+                  <h3 className="booking-section-title">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M10 10a4 4 0 100-8 4 4 0 000 8zm0 2c-4.42 0-8 1.79-8 4v2h16v-2c0-2.21-3.58-4-8-4z" fill="#4CAF50"/>
+                    </svg>
+                    Personal Information
+                  </h3>
+                  <div className="booking-form-row">
+                    <div className="booking-input-group">
+                      <label className="booking-label">Full Name *</label>
+                      <input
+                        type="text"
+                        className="booking-input"
+                        placeholder="Enter your full name"
+                        value={bookingData.fullName}
+                        onChange={(e) => handleBookingInputChange('fullName', e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="booking-form-row">
+                    <div className="booking-input-group">
+                      <label className="booking-label">Email Address *</label>
+                      <input
+                        type="email"
+                        className="booking-input"
+                        placeholder="your.email@example.com"
+                        value={bookingData.email}
+                        onChange={(e) => handleBookingInputChange('email', e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="booking-input-group">
+                      <label className="booking-label">Phone Number *</label>
+                      <input
+                        type="tel"
+                        className="booking-input"
+                        placeholder="(123) 456-7890"
+                        value={bookingData.phone}
+                        onChange={(e) => handleBookingInputChange('phone', e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Service Location Section */}
+                <div className="booking-section">
+                  <h3 className="booking-section-title">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M10 2a6 6 0 00-6 6c0 4.5 6 10 6 10s6-5.5 6-10a6 6 0 00-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z" fill="#4CAF50"/>
+                    </svg>
+                    Service Location
+                  </h3>
+                  <div className="booking-form-row">
+                    <div className="booking-input-group full-width">
+                      <label className="booking-label">Street Address *</label>
+                      <input
+                        type="text"
+                        className="booking-input"
+                        placeholder="123 Main Street, Apt 4B"
+                        value={bookingData.address}
+                        onChange={(e) => handleBookingInputChange('address', e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="booking-form-row">
+                    <div className="booking-input-group">
+                      <label className="booking-label">City *</label>
+                      <input
+                        type="text"
+                        className="booking-input"
+                        placeholder="Enter city"
+                        value={bookingData.city}
+                        onChange={(e) => handleBookingInputChange('city', e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="booking-input-group">
+                      <label className="booking-label">ZIP Code *</label>
+                      <input
+                        type="text"
+                        className="booking-input"
+                        placeholder="12345"
+                        value={bookingData.zipCode}
+                        onChange={(e) => handleBookingInputChange('zipCode', e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Schedule Section */}
+                <div className="booking-section">
+                  <h3 className="booking-section-title">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M6 2v2M14 2v2M3 8h14M5 4h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" stroke="#4CAF50" strokeWidth="2" fill="none"/>
+                    </svg>
+                    Schedule Service
+                  </h3>
+                  <div className="booking-form-row">
+                    <div className="booking-input-group">
+                      <label className="booking-label">Preferred Date *</label>
+                      <input
+                        type="date"
+                        className="booking-input"
+                        value={bookingData.serviceDate}
+                        onChange={(e) => handleBookingInputChange('serviceDate', e.target.value)}
+                        min={new Date().toISOString().split('T')[0]}
+                        required
+                      />
+                    </div>
+                    <div className="booking-input-group">
+                      <label className="booking-label">Preferred Time *</label>
+                      <select
+                        className="booking-input"
+                        value={bookingData.serviceTime}
+                        onChange={(e) => handleBookingInputChange('serviceTime', e.target.value)}
+                        required
+                      >
+                        <option value="">Select time</option>
+                        <option value="08:00 AM - 10:00 AM">08:00 AM - 10:00 AM</option>
+                        <option value="10:00 AM - 12:00 PM">10:00 AM - 12:00 PM</option>
+                        <option value="12:00 PM - 02:00 PM">12:00 PM - 02:00 PM</option>
+                        <option value="02:00 PM - 04:00 PM">02:00 PM - 04:00 PM</option>
+                        <option value="04:00 PM - 06:00 PM">04:00 PM - 06:00 PM</option>
+                        <option value="06:00 PM - 08:00 PM">06:00 PM - 08:00 PM</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Service Details Section */}
+                <div className="booking-section full-width">
+                  <h3 className="booking-section-title">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zM4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" fill="#4CAF50"/>
+                    </svg>
+                    Service Details
+                  </h3>
+                  
+                  <div className="booking-input-group full-width">
+                    <label className="booking-label">Describe your service needs *</label>
+                    <textarea
+                      className="booking-textarea"
+                      placeholder="Please provide details about the service you need, any specific requirements, or issues you're facing..."
+                      rows="4"
+                      value={bookingData.description}
+                      onChange={(e) => handleBookingInputChange('description', e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="booking-input-group full-width">
+                    <label className="booking-label">Urgency Level *</label>
+                    <div className="urgency-options">
+                      <label className={`urgency-option ${bookingData.urgency === 'low' ? 'active' : ''}`}>
+                        <input
+                          type="radio"
+                          name="urgency"
+                          value="low"
+                          checked={bookingData.urgency === 'low'}
+                          onChange={(e) => handleBookingInputChange('urgency', e.target.value)}
+                        />
+                        <div className="urgency-content">
+                          <span className="urgency-icon">📅</span>
+                          <span className="urgency-text">Low - Within a week</span>
+                        </div>
+                      </label>
+                      
+                      <label className={`urgency-option ${bookingData.urgency === 'normal' ? 'active' : ''}`}>
+                        <input
+                          type="radio"
+                          name="urgency"
+                          value="normal"
+                          checked={bookingData.urgency === 'normal'}
+                          onChange={(e) => handleBookingInputChange('urgency', e.target.value)}
+                        />
+                        <div className="urgency-content">
+                          <span className="urgency-icon">⏰</span>
+                          <span className="urgency-text">Normal - Within 2-3 days</span>
+                        </div>
+                      </label>
+                      
+                      <label className={`urgency-option ${bookingData.urgency === 'high' ? 'active' : ''}`}>
+                        <input
+                          type="radio"
+                          name="urgency"
+                          value="high"
+                          checked={bookingData.urgency === 'high'}
+                          onChange={(e) => handleBookingInputChange('urgency', e.target.value)}
+                        />
+                        <div className="urgency-content">
+                          <span className="urgency-icon">🚨</span>
+                          <span className="urgency-text">High - Urgent/Same day</span>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Service Summary */}
+                <div className="booking-summary">
+                  <h3 className="booking-summary-title">Booking Summary</h3>
+                  <div className="booking-summary-item">
+                    <span className="summary-label">Service:</span>
+                    <span className="summary-value">{selectedService.title}</span>
+                  </div>
+                  <div className="booking-summary-item">
+                    <span className="summary-label">Category:</span>
+                    <span className="summary-value">{selectedService.category}</span>
+                  </div>
+                  <div className="booking-summary-item">
+                    <span className="summary-label">Starting Price:</span>
+                    <span className="summary-value price">{selectedService.price}</span>
+                  </div>
+                  <div className="booking-summary-note">
+                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                      <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 12H9v-2h2v2zm0-4H9V6h2v4z" fill="#4CAF50"/>
+                    </svg>
+                    Final price will be confirmed by the service provider based on your specific requirements.
+                  </div>
+                </div>
+              </div>
+
+              <div className="booking-form-actions">
+                <button type="button" className="btn-booking-cancel" onClick={handleCloseBookingModal}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-booking-submit">
+                  Confirm Booking
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
