@@ -16,6 +16,8 @@ const Home = ({ userName, onLogout, onNavigate }) => {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [bookedServices, setBookedServices] = useState([]); // Store booked services
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showBookingDetailsModal, setShowBookingDetailsModal] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
   const [bookingData, setBookingData] = useState({
     fullName: '',
     email: '',
@@ -85,7 +87,7 @@ const Home = ({ userName, onLogout, onNavigate }) => {
     {
       id: 5,
       title: 'Professional Painting',
-      image: '/welcome.jpg',
+      image: '/painting.jpg',
       category: 'Renovation',
       badge: 'Popular',
       badgeColor: 'pink',
@@ -98,7 +100,7 @@ const Home = ({ userName, onLogout, onNavigate }) => {
     {
       id: 6,
       title: 'Carpentry & Woodwork',
-      image: '/welcome.jpg',
+      image: '/carpentry.jpg',
       category: 'Renovation',
       badge: 'Featured',
       badgeColor: 'orange',
@@ -111,7 +113,7 @@ const Home = ({ userName, onLogout, onNavigate }) => {
     {
       id: 7,
       title: 'Smart Home Installation',
-      image: '/welcome.jpg',
+      image: '/smart.jpg',
       category: 'Technology',
       badge: 'New',
       badgeColor: 'purple',
@@ -434,6 +436,28 @@ const Home = ({ userName, onLogout, onNavigate }) => {
     alert('Booking confirmed successfully! Check My Bookings to view details.');
   };
 
+  const handleViewBookingDetails = (booking) => {
+    setSelectedBooking(booking);
+    setShowBookingDetailsModal(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const handleCloseBookingDetailsModal = () => {
+    setShowBookingDetailsModal(false);
+    setSelectedBooking(null);
+    document.body.style.overflow = 'auto';
+  };
+
+  const handleCancelBooking = (bookingId) => {
+    if (window.confirm('Are you sure you want to cancel this booking?')) {
+      setBookedServices(prev => prev.filter(booking => booking.id !== bookingId));
+      setShowBookingDetailsModal(false);
+      setSelectedBooking(null);
+      document.body.style.overflow = 'auto';
+      alert('Booking cancelled successfully!');
+    }
+  };
+
   const displayServices = currentPage === 'service' ? allServices : services;
 
   return (
@@ -477,7 +501,7 @@ const Home = ({ userName, onLogout, onNavigate }) => {
                     </svg>
                     My Profile
                   </button>
-                  <button className="dropdown-item" onClick={() => setShowProfileMenu(false)}>
+                  <button className="dropdown-item" onClick={() => { handleNavigation('bookings'); setShowProfileMenu(false); }}>
                     <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                       <path d="M2 6h16M2 10h16M2 14h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                     </svg>
@@ -634,7 +658,7 @@ const Home = ({ userName, onLogout, onNavigate }) => {
                       <span className="rating-text">{service.rating}</span>
                       <span className="reviews-text">({service.reviews} reviews)</span>
                     </div>
-                    <button className="book-service-btn">Book Now</button>
+                    <button className="book-service-btn" onClick={() => handleBookNow(service)}>Book Now</button>
                   </div>
                 </div>
               </div>
@@ -768,7 +792,7 @@ const Home = ({ userName, onLogout, onNavigate }) => {
 
                       <div className="service-actions">
                         <button className="btn-view-details" onClick={() => handleViewDetails(service)}>View Full Details</button>
-                        <button className="btn-book-now">Book Now</button>
+                        <button className="btn-book-now" onClick={() => handleBookNow(service)}>Book Now</button>
                       </div>
                     </div>
                   </div>
@@ -913,10 +937,10 @@ const Home = ({ userName, onLogout, onNavigate }) => {
                     </div>
                     
                     <div className="booking-actions">
-                      <button className="btn-booking-details" onClick={() => handleViewDetails(booking.service)}>
-                        View Details
+                      <button className="btn-booking-details" onClick={() => handleViewBookingDetails(booking)}>
+                        Show Details
                       </button>
-                      <button className="btn-booking-cancel">Cancel Booking</button>
+                      <button className="btn-booking-cancel" onClick={() => handleCancelBooking(booking.id)}>Cancel Booking</button>
                     </div>
                   </div>
                 ))}
@@ -1490,6 +1514,165 @@ const Home = ({ userName, onLogout, onNavigate }) => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Booking Details Modal */}
+      {showBookingDetailsModal && selectedBooking && (
+        <div className="booking-details-overlay" onClick={handleCloseBookingDetailsModal}>
+          <div className="booking-details-content" onClick={(e) => e.stopPropagation()}>
+            <button className="booking-details-close-btn" onClick={handleCloseBookingDetailsModal}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <path d="M18 6L6 18M6 6l12 12" stroke="#FFFFFF" strokeWidth="3.5" strokeLinecap="round"/>
+              </svg>
+            </button>
+
+            <div className="booking-details-header">
+              <div className="booking-details-title-section">
+                <h2 className="booking-details-title">Booking Details</h2>
+                <span className={`booking-status-large status-${selectedBooking.status.toLowerCase()}`}>
+                  {selectedBooking.status}
+                </span>
+              </div>
+            </div>
+
+            <div className="booking-details-body">
+              {/* Service Information */}
+              <div className="details-section">
+                <h3 className="details-section-title">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 2a6 6 0 00-6 6v1H3a1 1 0 00-1 1v7a2 2 0 002 2h12a2 2 0 002-2v-7a1 1 0 00-1-1h-1V8a6 6 0 00-6-6z" fill="#4CAF50"/>
+                  </svg>
+                  Service Information
+                </h3>
+                <div className="details-grid">
+                  <div className="detail-item">
+                    <span className="detail-label">Service Name</span>
+                    <span className="detail-value">{selectedBooking.service.title}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Category</span>
+                    <span className="detail-value">{selectedBooking.service.category}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Starting Price</span>
+                    <span className="detail-value price-highlight">{selectedBooking.service.price}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Rating</span>
+                    <span className="detail-value">⭐ {selectedBooking.service.rating} ({selectedBooking.service.reviews} reviews)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Customer Information */}
+              <div className="details-section">
+                <h3 className="details-section-title">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 10a4 4 0 100-8 4 4 0 000 8zm0 2c-4.42 0-8 1.79-8 4v2h16v-2c0-2.21-3.58-4-8-4z" fill="#4CAF50"/>
+                  </svg>
+                  Customer Information
+                </h3>
+                <div className="details-grid">
+                  <div className="detail-item">
+                    <span className="detail-label">Full Name</span>
+                    <span className="detail-value">{selectedBooking.bookingDetails.fullName}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Email</span>
+                    <span className="detail-value">{selectedBooking.bookingDetails.email}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Phone Number</span>
+                    <span className="detail-value">{selectedBooking.bookingDetails.phone}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Booking Date</span>
+                    <span className="detail-value">{selectedBooking.bookingDate}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Service Location */}
+              <div className="details-section">
+                <h3 className="details-section-title">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 2a6 6 0 00-6 6c0 4.5 6 10 6 10s6-5.5 6-10a6 6 0 00-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z" fill="#4CAF50"/>
+                  </svg>
+                  Service Location
+                </h3>
+                <div className="details-grid">
+                  <div className="detail-item full-width">
+                    <span className="detail-label">Street Address</span>
+                    <span className="detail-value">{selectedBooking.bookingDetails.address}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">City</span>
+                    <span className="detail-value">{selectedBooking.bookingDetails.city}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">ZIP Code</span>
+                    <span className="detail-value">{selectedBooking.bookingDetails.zipCode}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Schedule Information */}
+              <div className="details-section">
+                <h3 className="details-section-title">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M6 2v2M14 2v2M3 8h14M5 4h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" stroke="#4CAF50" strokeWidth="2" fill="none"/>
+                  </svg>
+                  Schedule
+                </h3>
+                <div className="details-grid">
+                  <div className="detail-item">
+                    <span className="detail-label">Service Date</span>
+                    <span className="detail-value">{selectedBooking.scheduledDate}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Service Time</span>
+                    <span className="detail-value">{selectedBooking.scheduledTime}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Urgency Level</span>
+                    <span className={`urgency-badge-large ${selectedBooking.bookingDetails.urgency}`}>
+                      {selectedBooking.bookingDetails.urgency === 'low' && '📅 '}
+                      {selectedBooking.bookingDetails.urgency === 'normal' && '⏰ '}
+                      {selectedBooking.bookingDetails.urgency === 'high' && '🚨 '}
+                      {selectedBooking.bookingDetails.urgency.charAt(0).toUpperCase() + selectedBooking.bookingDetails.urgency.slice(1)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Service Description */}
+              <div className="details-section full-width">
+                <h3 className="details-section-title">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zM4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" fill="#4CAF50"/>
+                  </svg>
+                  Service Description
+                </h3>
+                <div className="description-box">
+                  {selectedBooking.bookingDetails.description}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="booking-details-actions">
+                <button className="btn-view-service" onClick={() => {
+                  handleCloseBookingDetailsModal();
+                  handleViewDetails(selectedBooking.service);
+                }}>
+                  View Service Details
+                </button>
+                <button className="btn-cancel-booking" onClick={() => handleCancelBooking(selectedBooking.id)}>
+                  Cancel Booking
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
