@@ -126,7 +126,7 @@ const Home = ({ userName, onLogout, onNavigate }) => {
     {
       id: 8,
       title: 'Bathroom Renovation',
-      image: '/welcome.jpg',
+      image: '/bath.jpg',
       category: 'Renovation',
       badge: 'Premium',
       badgeColor: 'teal',
@@ -139,7 +139,7 @@ const Home = ({ userName, onLogout, onNavigate }) => {
     {
       id: 9,
       title: 'Flooring Solutions',
-      image: '/welcome.jpg',
+      image: '/flooring.jpg',
       category: 'Renovation',
       badge: 'Quality',
       badgeColor: 'gray',
@@ -152,7 +152,7 @@ const Home = ({ userName, onLogout, onNavigate }) => {
     {
       id: 10,
       title: 'Kitchen Appliance Repair',
-      image: '/welcome.jpg',
+      image: '/kit.jpg',
       category: 'Repair',
       badge: 'Fast',
       badgeColor: 'blue',
@@ -165,7 +165,7 @@ const Home = ({ userName, onLogout, onNavigate }) => {
     {
       id: 11,
       title: 'Garden & Landscaping',
-      image: '/welcome.jpg',
+      image: '/garden.jpg',
       category: 'Outdoor',
       badge: 'Eco',
       badgeColor: 'green',
@@ -178,7 +178,7 @@ const Home = ({ userName, onLogout, onNavigate }) => {
     {
       id: 12,
       title: 'Roofing & Gutter Service',
-      image: '/welcome.jpg',
+      image: '/roof.jpg',
       category: 'Repair',
       badge: 'Trusted',
       badgeColor: 'gray',
@@ -191,7 +191,7 @@ const Home = ({ userName, onLogout, onNavigate }) => {
     {
       id: 13,
       title: 'Window Installation & Repair',
-      image: '/welcome.jpg',
+      image: '/wind.jpg',
       category: 'Repair',
       badge: 'Quality',
       badgeColor: 'gray',
@@ -204,7 +204,7 @@ const Home = ({ userName, onLogout, onNavigate }) => {
     {
       id: 14,
       title: 'Security System Installation',
-      image: '/welcome.jpg',
+      image: '/sec.jpg',
       category: 'Technology',
       badge: 'Premium',
       badgeColor: 'red',
@@ -215,35 +215,9 @@ const Home = ({ userName, onLogout, onNavigate }) => {
       features: ['CCTV installation', 'Alarm systems', '24/7 monitoring', 'Smart locks']
     },
     {
-      id: 15,
-      title: 'Pest & Bug Maintenance',
-      image: '/welcome.jpg',
-      category: 'Cleaning',
-      badge: 'Safe',
-      badgeColor: 'blue',
-      rating: 4.6,
-      reviews: 234,
-      price: '$45 - $180',
-      description: 'Effective pest control with safe, eco-friendly methods for residential and commercial properties.',
-      features: ['Eco-friendly treatment', 'All pest types', 'Prevention plans', 'Regular maintenance']
-    },
-    {
-      id: 16,
-      title: 'Chimney & Fireplace Service',
-      image: '/welcome.jpg',
-      category: 'Cleaning',
-      badge: 'Seasonal',
-      badgeColor: 'orange',
-      rating: 4.7,
-      reviews: 98,
-      price: '$80 - $300',
-      description: 'Expert chimney cleaning, inspection, and maintenance to ensure safe and efficient operation.',
-      features: ['Chimney cleaning', 'Safety inspection', 'Repair services', 'Maintenance']
-    },
-    {
       id: 17,
       title: 'Handyman Services',
-      image: '/welcome.jpg',
+      image: '/man.jpg',
       category: 'General',
       badge: 'Versatile',
       badgeColor: 'gray',
@@ -256,7 +230,7 @@ const Home = ({ userName, onLogout, onNavigate }) => {
     {
       id: 18,
       title: 'Pool Maintenance',
-      image: '/welcome.jpg',
+      image: '/pool.jpg',
       category: 'Outdoor',
       badge: 'Summer',
       badgeColor: 'blue',
