@@ -3,115 +3,268 @@ import './Home.css';
 
 const Home = ({ userName, onLogout, onNavigate }) => {
   const [searchData, setSearchData] = useState({
-    location: '',
+    serviceName: '',
     serviceType: '',
     priceRange: ''
   });
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [currentPage, setCurrentPage] = useState('home');
 
+  const [selectedCategory, setSelectedCategory] = useState('All Categories');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedService, setSelectedService] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+
   const allServices = [
     {
       id: 1,
-      title: 'Plumbing Services',
+      title: 'Professional Plumbing',
       image: '/welcome.jpg',
-      location: 'Available Nationwide',
+      category: 'Repair',
+      badge: 'Popular',
+      badgeColor: 'blue',
       rating: 4.8,
       reviews: 245,
       price: '$50 - $200',
-      description: 'Professional plumbing solutions for all your needs'
+      description: 'Expert leak fixes & installations. Professional plumbing solutions with advanced equipment and experienced technicians.',
+      features: ['Emergency service', 'Leak detection', 'Pipe installation', 'Water heater repair']
     },
     {
       id: 2,
-      title: 'Electrical Work',
+      title: 'Electrical Services',
       image: '/welcome.jpg',
-      location: 'Available Nationwide',
+      category: 'Repair',
+      badge: 'Popular',
+      badgeColor: 'yellow',
       rating: 4.9,
       reviews: 312,
       price: '$75 - $300',
-      description: 'Licensed electricians for safe installations'
+      description: 'Wiring, repair & safety checks. Licensed electricians providing safe and reliable electrical solutions.',
+      features: ['Wiring & rewiring', 'Circuit breaker repair', 'Safety inspections', 'Outlet installation']
     },
     {
       id: 3,
-      title: 'House Cleaning',
+      title: 'Home Deep Cleaning',
       image: '/welcome.jpg',
-      location: 'Available Nationwide',
+      category: 'Cleaning',
+      badge: 'Trending',
+      badgeColor: 'green',
       rating: 4.7,
       reviews: 428,
       price: '$40 - $150',
-      description: 'Professional deep cleaning services'
+      description: 'Spotless, healthier living spaces. Transform your home with our professional deep cleaning services.',
+      features: ['Deep carpet cleaning', 'Kitchen sanitization', 'Bathroom cleaning', 'Window washing']
     },
     {
       id: 4,
-      title: 'AC Repair & Service',
+      title: 'AC & HVAC Services',
       image: '/welcome.jpg',
-      location: 'Available Nationwide',
+      category: 'Repair',
+      badge: 'Hot',
+      badgeColor: 'orange',
       rating: 4.8,
       reviews: 189,
       price: '$60 - $250',
-      description: 'Fast and reliable AC solutions'
+      description: 'Experienced HVAC technicians for AC cooling and heating needs, ensuring comfort year-round.',
+      features: ['AC repair & service', 'Installation', 'Maintenance', 'Emergency cooling']
     },
     {
       id: 5,
-      title: 'Painting Services',
+      title: 'Professional Painting',
       image: '/welcome.jpg',
-      location: 'Available Nationwide',
+      category: 'Renovation',
+      badge: 'Popular',
+      badgeColor: 'pink',
       rating: 4.6,
       reviews: 156,
       price: '$100 - $500',
-      description: 'Interior and exterior painting by experts'
+      description: 'Professional painting services for interior, with creative color consultations and quality finishes.',
+      features: ['Interior painting', 'Exterior painting', 'Color consultation', 'Wall preparation']
     },
     {
       id: 6,
-      title: 'Carpentry Work',
+      title: 'Carpentry & Woodwork',
       image: '/welcome.jpg',
-      location: 'Available Nationwide',
+      category: 'Renovation',
+      badge: 'Featured',
+      badgeColor: 'orange',
       rating: 4.7,
       reviews: 203,
       price: '$80 - $350',
-      description: 'Custom carpentry and furniture repair'
+      description: 'Skilled carpenter services for expert furniture, cabinet installation, and custom woodworking projects.',
+      features: ['Custom furniture', 'Cabinet installation', 'Door repair', 'Wood refinishing']
     },
     {
       id: 7,
-      title: 'Pest Control',
+      title: 'Smart Home Installation',
       image: '/welcome.jpg',
-      location: 'Available Nationwide',
-      rating: 4.5,
-      reviews: 178,
-      price: '$45 - $180',
-      description: 'Effective pest elimination and prevention'
+      category: 'Technology',
+      badge: 'New',
+      badgeColor: 'purple',
+      rating: 4.9,
+      reviews: 134,
+      price: '$150 - $600',
+      description: 'Expert smart home and security systems for modern connected living with automation.',
+      features: ['Smart device setup', 'Home automation', 'Voice control', 'App integration']
     },
     {
       id: 8,
-      title: 'Appliance Repair',
+      title: 'Bathroom Renovation',
       image: '/welcome.jpg',
-      location: 'Available Nationwide',
+      category: 'Renovation',
+      badge: 'Premium',
+      badgeColor: 'teal',
       rating: 4.8,
       reviews: 267,
-      price: '$55 - $220',
-      description: 'Quick appliance repair and maintenance'
+      price: '$500 - $3000',
+      description: 'Complete bathroom transformation with modern fixtures, tiling, and custom design services.',
+      features: ['Complete remodeling', 'Fixture installation', 'Tiling', 'Modern design']
     },
     {
       id: 9,
-      title: 'Landscaping',
+      title: 'Flooring Solutions',
       image: '/welcome.jpg',
-      location: 'Available Nationwide',
-      rating: 4.6,
-      reviews: 142,
-      price: '$90 - $400',
-      description: 'Garden design and landscape maintenance'
+      category: 'Renovation',
+      badge: 'Quality',
+      badgeColor: 'gray',
+      rating: 4.7,
+      reviews: 198,
+      price: '$200 - $1500',
+      description: 'Professional flooring installation including hardwood, tile, carpet, and laminate options.',
+      features: ['Hardwood installation', 'Tile flooring', 'Carpet fitting', 'Floor refinishing']
     },
     {
       id: 10,
-      title: 'Home Security',
+      title: 'Kitchen Appliance Repair',
       image: '/welcome.jpg',
-      location: 'Available Nationwide',
+      category: 'Repair',
+      badge: 'Fast',
+      badgeColor: 'blue',
+      rating: 4.6,
+      reviews: 289,
+      price: '$55 - $220',
+      description: 'On-site kitchen repairs. Quick and reliable appliance repair services for all major brands.',
+      features: ['Refrigerator repair', 'Oven servicing', 'Dishwasher fix', 'Same-day service']
+    },
+    {
+      id: 11,
+      title: 'Garden & Landscaping',
+      image: '/welcome.jpg',
+      category: 'Outdoor',
+      badge: 'Eco',
+      badgeColor: 'green',
+      rating: 4.5,
+      reviews: 176,
+      price: '$90 - $400',
+      description: 'Transform outdoor spaces with professional landscaping, garden design, and lawn maintenance.',
+      features: ['Lawn maintenance', 'Garden design', 'Tree trimming', 'Irrigation systems']
+    },
+    {
+      id: 12,
+      title: 'Roofing & Gutter Service',
+      image: '/welcome.jpg',
+      category: 'Repair',
+      badge: 'Trusted',
+      badgeColor: 'gray',
+      rating: 4.8,
+      reviews: 145,
+      price: '$150 - $800',
+      description: 'Professional roofing and gutter cleaning services with quality materials and expert workmanship.',
+      features: ['Roof repair', 'Gutter cleaning', 'Leak fixing', 'Inspection']
+    },
+    {
+      id: 13,
+      title: 'Window Installation & Repair',
+      image: '/welcome.jpg',
+      category: 'Repair',
+      badge: 'Quality',
+      badgeColor: 'gray',
+      rating: 4.7,
+      reviews: 167,
+      price: '$100 - $500',
+      description: 'Complete window services including installation, repair, and energy-efficient replacements.',
+      features: ['Window replacement', 'Glass repair', 'Energy efficient', 'Custom sizes']
+    },
+    {
+      id: 14,
+      title: 'Security System Installation',
+      image: '/welcome.jpg',
+      category: 'Technology',
+      badge: 'Premium',
+      badgeColor: 'red',
       rating: 4.9,
-      reviews: 198,
-      price: '$120 - $450',
-      description: 'Security system installation and monitoring'
+      reviews: 203,
+      price: '$200 - $1000',
+      description: 'Complete home security system installation including cameras, sensors, and 24/7 monitoring.',
+      features: ['CCTV installation', 'Alarm systems', '24/7 monitoring', 'Smart locks']
+    },
+    {
+      id: 15,
+      title: 'Pest & Bug Maintenance',
+      image: '/welcome.jpg',
+      category: 'Cleaning',
+      badge: 'Safe',
+      badgeColor: 'blue',
+      rating: 4.6,
+      reviews: 234,
+      price: '$45 - $180',
+      description: 'Effective pest control with safe, eco-friendly methods for residential and commercial properties.',
+      features: ['Eco-friendly treatment', 'All pest types', 'Prevention plans', 'Regular maintenance']
+    },
+    {
+      id: 16,
+      title: 'Chimney & Fireplace Service',
+      image: '/welcome.jpg',
+      category: 'Cleaning',
+      badge: 'Seasonal',
+      badgeColor: 'orange',
+      rating: 4.7,
+      reviews: 98,
+      price: '$80 - $300',
+      description: 'Expert chimney cleaning, inspection, and maintenance to ensure safe and efficient operation.',
+      features: ['Chimney cleaning', 'Safety inspection', 'Repair services', 'Maintenance']
+    },
+    {
+      id: 17,
+      title: 'Handyman Services',
+      image: '/welcome.jpg',
+      category: 'General',
+      badge: 'Versatile',
+      badgeColor: 'gray',
+      rating: 4.8,
+      reviews: 312,
+      price: '$40 - $150',
+      description: 'All-in-one handyman services for minor repairs, installations, and home improvement tasks.',
+      features: ['Minor repairs', 'Furniture assembly', 'TV mounting', 'General fixes']
+    },
+    {
+      id: 18,
+      title: 'Pool Maintenance',
+      image: '/welcome.jpg',
+      category: 'Outdoor',
+      badge: 'Summer',
+      badgeColor: 'blue',
+      rating: 4.5,
+      reviews: 127,
+      price: '$70 - $250',
+      description: 'Professional pool cleaning, maintenance, and repair services for crystal clear water.',
+      features: ['Pool cleaning', 'Chemical balance', 'Equipment repair', 'Regular maintenance']
     }
   ];
+
+  const categories = ['All Categories', 'Repair', 'Cleaning', 'Renovation', 'Technology', 'Outdoor', 'General'];
+
+  // Get top 5 services by rating for home page
+  const topRatedServices = [...allServices]
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, 5);
+
+  const filteredServices = allServices.filter(service => {
+    const matchesCategory = selectedCategory === 'All Categories' || service.category === selectedCategory;
+    const matchesSearch = service.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          service.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   const services = allServices.slice(0, 4); // Show first 4 on home page
 
@@ -149,6 +302,43 @@ const Home = ({ userName, onLogout, onNavigate }) => {
   const handleNavigation = (page) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSearch = () => {
+    // Navigate to services page
+    setCurrentPage('service');
+    
+    // Apply filters based on search data
+    if (searchData.serviceName) {
+      setSearchQuery(searchData.serviceName);
+    }
+    if (searchData.serviceType && searchData.serviceType !== '') {
+      setSelectedCategory(searchData.serviceType);
+    }
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleClearSearch = () => {
+    setSearchData({
+      serviceName: '',
+      serviceType: '',
+      priceRange: ''
+    });
+    setSearchQuery('');
+    setSelectedCategory('All Categories');
+  };
+
+  const handleViewDetails = (service) => {
+    setSelectedService(service);
+    setShowDetailModal(true);
+    document.body.style.overflow = 'hidden'; // Prevent background scroll
+  };
+
+  const handleCloseModal = () => {
+    setShowDetailModal(false);
+    setSelectedService(null);
+    document.body.style.overflow = 'auto'; // Restore scroll
   };
 
   const displayServices = currentPage === 'service' ? allServices : services;
@@ -229,35 +419,35 @@ const Home = ({ userName, onLogout, onNavigate }) => {
               Explore our curated selection of professional home services 
               meticulously tailored to your unique needs and preferences
             </p>
-            <button className="cta-button">Book Services</button>
+            <button className="cta-button" onClick={() => handleNavigation('service')}>Book Services</button>
 
             {/* Search Bar */}
             <div className="search-box-wrapper">
               <div className="search-field">
-                <label className="search-label">Location</label>
+                <label className="search-label">Service</label>
                 <input 
                   type="text" 
-                  placeholder="Enter location" 
+                  placeholder="Enter service name" 
                   className="search-input"
-                  value={searchData.location}
-                  onChange={(e) => setSearchData({...searchData, location: e.target.value})}
+                  value={searchData.serviceName}
+                  onChange={(e) => setSearchData({...searchData, serviceName: e.target.value})}
                 />
               </div>
               
               <div className="search-field">
-                <label className="search-label">Type</label>
+                <label className="search-label">Category</label>
                 <select 
                   className="search-input"
                   value={searchData.serviceType}
                   onChange={(e) => setSearchData({...searchData, serviceType: e.target.value})}
                 >
-                  <option value="">Select service</option>
-                  <option value="plumbing">Plumbing</option>
-                  <option value="electrical">Electrical</option>
-                  <option value="cleaning">Cleaning</option>
-                  <option value="ac">AC Repair</option>
-                  <option value="painting">Painting</option>
-                  <option value="carpentry">Carpentry</option>
+                  <option value="">Select category</option>
+                  <option value="Repair">Repair</option>
+                  <option value="Cleaning">Cleaning</option>
+                  <option value="Renovation">Renovation</option>
+                  <option value="Technology">Technology</option>
+                  <option value="Outdoor">Outdoor</option>
+                  <option value="General">General</option>
                 </select>
               </div>
 
@@ -275,7 +465,7 @@ const Home = ({ userName, onLogout, onNavigate }) => {
                 </select>
               </div>
 
-              <button className="search-submit-btn">Search</button>
+              <button className="search-submit-btn" onClick={handleSearch}>Search</button>
             </div>
           </div>
 
@@ -332,18 +522,18 @@ const Home = ({ userName, onLogout, onNavigate }) => {
           </div>
 
           <div className="services-grid-modern">
-            {services.map((service) => (
+            {topRatedServices.map((service) => (
               <div key={service.id} className="service-card-modern">
                 <div className="service-image-wrapper">
                   <img src={service.image} alt={service.title} className="service-image" />
-                  <span className="service-badge">Featured</span>
+                  <span className={`service-badge badge-${service.badgeColor}`}>{service.badge}</span>
                 </div>
                 <div className="service-info">
                   <div className="service-header-row">
                     <h3 className="service-name">{service.title}</h3>
                     <span className="service-price">{service.price}</span>
                   </div>
-                  <p className="service-location">📍 {service.location}</p>
+                  <p className="service-category-inline">� {service.category}</p>
                   <p className="service-desc">{service.description}</p>
                   <div className="service-footer-row">
                     <div className="rating-info">
@@ -400,44 +590,119 @@ const Home = ({ userName, onLogout, onNavigate }) => {
         </>
       )}
 
-      {/* Service Page - Show all 10 services */}
+      {/* Service Page - Show all services with filters */}
       {currentPage === 'service' && (
-        <section className="all-services-section">
+        <section className="all-services-page">
+          {/* Hero Header */}
+          <div className="services-hero">
+            <div className="services-hero-content">
+              <h1 className="services-hero-title">Our Services</h1>
+              <p className="services-hero-subtitle">
+                Discover our comprehensive range of professional home services designed to meet your essential needs. 
+                From everyday maintenance to specialized projects, trust HomeServe for quality service delivery.
+              </p>
+            </div>
+          </div>
+
           <div className="section-container">
-            <div className="section-heading">
-              <h2 className="section-title-main">All Our Services</h2>
-              <p className="section-subtitle">Choose from our complete range of professional home services</p>
+            {/* Search and Filter Bar */}
+            <div className="services-filter-bar">
+              <div className="search-box-services">
+                <svg className="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM18 18l-4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+                <input 
+                  type="text" 
+                  placeholder="Search services..." 
+                  className="search-input-services"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              <div className="category-filters">
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    className={`category-btn ${selectedCategory === category ? 'active' : ''}`}
+                    onClick={() => setSelectedCategory(category)}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div className="services-grid-modern">
-              {allServices.map((service) => (
-                <div key={service.id} className="service-card-modern">
-                  <div className="service-image-wrapper">
-                    <img src={service.image} alt={service.title} className="service-image" />
-                    <span className="service-badge">Available</span>
-                  </div>
-                  <div className="service-info">
-                    <div className="service-header-row">
-                      <h3 className="service-name">{service.title}</h3>
-                      <span className="service-price">{service.price}</span>
+            {/* Services Grid */}
+            <div className="services-results">
+              <p className="results-count">Showing {filteredServices.length} services</p>
+              <div className="services-grid-full">
+                {filteredServices.map((service) => (
+                  <div key={service.id} className="service-card-full">
+                    <div className="service-image-wrapper-full">
+                      <img src={service.image} alt={service.title} className="service-image-full" />
+                      <span className={`service-badge-full badge-${service.badgeColor}`}>
+                        {service.badge}
+                      </span>
                     </div>
-                    <p className="service-location">📍 {service.location}</p>
-                    <p className="service-desc">{service.description}</p>
-                    <div className="service-footer-row">
-                      <div className="rating-info">
-                        <span className="star">⭐</span>
-                        <span className="rating-text">{service.rating}</span>
-                        <span className="reviews-text">({service.reviews} reviews)</span>
+                    <div className="service-content-full">
+                      <div className="service-category-tag">{service.category}</div>
+                      <h3 className="service-title-full">{service.title}</h3>
+                      <p className="service-description-full">{service.description}</p>
+                      
+                      <div className="service-features-list">
+                        <h4 className="features-heading">What's Included:</h4>
+                        <ul className="features-ul">
+                          {service.features.map((feature, index) => (
+                            <li key={index} className="feature-item">
+                              <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                                <path d="M7 10l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#4CAF50" strokeWidth="2" strokeLinecap="round"/>
+                              </svg>
+                              {feature}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                      <button className="book-service-btn">Book Now</button>
+
+                      <div className="service-footer-full">
+                        <div className="service-rating-full">
+                          <span className="star">⭐</span>
+                          <span className="rating-value">{service.rating}</span>
+                          <span className="reviews-count">({service.reviews} reviews)</span>
+                        </div>
+                        <div className="service-price-full">{service.price}</div>
+                      </div>
+
+                      <div className="service-actions">
+                        <button className="btn-view-details" onClick={() => handleViewDetails(service)}>View Full Details</button>
+                        <button className="btn-book-now">Book Now</button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            </div>
+
+            {/* Can't Find Section */}
+            <div className="cant-find-section">
+              <h2 className="cant-find-title">Can't Find What You're Looking For?</h2>
+              <p className="cant-find-text">
+                We're constantly adding new services. Contact us to suggest specific services or get a quote for custom work.
+              </p>
+              <div className="cant-find-actions">
+                <button className="btn-contact">Contact Support</button>
+                <button className="btn-custom-quote">Request Custom Quote</button>
+              </div>
             </div>
           </div>
         </section>
       )}
+
+
+
+
+
+
 
       {/* My Bookings Page */}
       {currentPage === 'bookings' && (
@@ -451,6 +716,14 @@ const Home = ({ userName, onLogout, onNavigate }) => {
           </div>
         </section>
       )}
+
+
+
+
+
+
+
+
 
       {/* About Us Page */}
       {currentPage === 'about' && (
@@ -625,6 +898,132 @@ const Home = ({ userName, onLogout, onNavigate }) => {
             </div>
           </div>
         </section>
+      )}
+
+      {/* Service Detail Modal */}
+      {showDetailModal && selectedService && (
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close-btn" onClick={handleCloseModal}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <path d="M18 6L6 18M6 6l12 12" stroke="#FFFFFF" strokeWidth="3.5" strokeLinecap="round"/>
+              </svg>
+            </button>
+
+            <div className="modal-body">
+              {/* Left Section - Service Info */}
+              <div className="modal-left">
+                <div className="modal-header-section">
+                  <div className="modal-image-wrapper">
+                    <img src={selectedService.image} alt={selectedService.title} className="modal-service-image" />
+                    <span className={`modal-badge badge-${selectedService.badgeColor}`}>
+                      {selectedService.badge}
+                    </span>
+                  </div>
+                  
+                  <div className="modal-title-section">
+                    <span className="modal-category-tag">{selectedService.category}</span>
+                    <h2 className="modal-service-title">{selectedService.title}</h2>
+                    <div className="modal-rating-row">
+                      <span className="star">⭐</span>
+                      <span className="modal-rating">{selectedService.rating}</span>
+                      <span className="modal-reviews">({selectedService.reviews} reviews)</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="modal-section">
+                  <h3 className="modal-section-title">About this service</h3>
+                  <p className="modal-description">{selectedService.description}</p>
+                  <p className="modal-additional-text">
+                    Certified professionals for {selectedService.title.toLowerCase()}. We handle all types of requirements 
+                    and scheduled maintenance with professional tools and licensed technicians.
+                  </p>
+                </div>
+
+                <div className="modal-section">
+                  <h3 className="modal-section-title">What's included</h3>
+                  <ul className="modal-features-list">
+                    {selectedService.features.map((feature, index) => (
+                      <li key={index} className="modal-feature-item">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                          <path d="M7 10l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#4CAF50" strokeWidth="2" strokeLinecap="round"/>
+                        </svg>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="modal-section">
+                  <h3 className="modal-section-title">Available Providers</h3>
+                  <div className="modal-provider-card">
+                    <div className="provider-avatar">
+                      <img src="/welcome.jpg" alt="Provider" />
+                    </div>
+                    <div className="provider-info">
+                      <h4 className="provider-name">Professional Team</h4>
+                      <p className="provider-specialty">{selectedService.title}</p>
+                      <div className="provider-rating">
+                        <span className="star">⭐</span>
+                        <span>{selectedService.rating}</span>
+                        <span className="provider-reviews">({selectedService.reviews})</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Section - Booking */}
+              <div className="modal-right">
+                <div className="modal-booking-card">
+                  <div className="booking-price-section">
+                    <span className="booking-price-label">Starting from</span>
+                    <h2 className="booking-price">{selectedService.price}</h2>
+                  </div>
+
+                  <div className="booking-form">
+                    <h3 className="booking-title">Book this service</h3>
+                    <p className="booking-subtitle">
+                      Start with just a few details. Our team will confirm availability and send professional providers.
+                    </p>
+
+                    <div className="booking-features">
+                      <div className="booking-feature">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#4CAF50" strokeWidth="2"/>
+                        </svg>
+                        <span>Licensed professionals</span>
+                      </div>
+                      <div className="booking-feature">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#4CAF50" strokeWidth="2"/>
+                        </svg>
+                        <span>Insured professionals</span>
+                      </div>
+                      <div className="booking-feature">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#4CAF50" strokeWidth="2"/>
+                        </svg>
+                        <span>Rated providers</span>
+                      </div>
+                    </div>
+
+                    <button className="btn-book-now-modal">Book Now</button>
+                  </div>
+
+                  <div className="modal-questions">
+                    <h4 className="questions-title">Questions?</h4>
+                    <p className="questions-text">
+                      Not sure if this service is right for you? We can help clarify details and recommendations.
+                    </p>
+                    <button className="btn-contact-modal">Contact us →</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Footer - Shown on all pages */}
