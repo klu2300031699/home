@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import './Home.css';
 
-const Home = ({ userName, onLogout, onNavigate }) => {
+const Home = ({ userName, userEmail = 'gnanesh@gmail.com', userRole = 'user', onLogout, onNavigate }) => {
   const [searchData, setSearchData] = useState({
     serviceName: '',
     serviceType: '',
     priceRange: ''
   });
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [currentPage, setCurrentPage] = useState('home');
+  const [currentPage, setCurrentPage] = useState(userRole === 'admin' ? 'admin' : 'home');
 
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [searchQuery, setSearchQuery] = useState('');
@@ -31,7 +31,22 @@ const Home = ({ userName, onLogout, onNavigate }) => {
     urgency: 'normal'
   });
 
-  const allServices = [
+  // Admin states
+  const [adminView, setAdminView] = useState('overview');
+  const [users, setUsers] = useState([
+    { id: 1, name: 'Gnanesh', email: 'gnanesh@gmail.com', role: 'user', joinDate: '2025-10-15', bookings: 3 },
+    { id: 2, name: 'John Doe', email: 'john@example.com', role: 'user', joinDate: '2025-10-20', bookings: 1 },
+    { id: 3, name: 'Jane Smith', email: 'jane@example.com', role: 'user', joinDate: '2025-10-25', bookings: 2 }
+  ]);
+  const [showEditUserModal, setShowEditUserModal] = useState(false);
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [showEditServiceModal, setShowEditServiceModal] = useState(false);
+  const [showAddServiceModal, setShowAddServiceModal] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [editingService, setEditingService] = useState(null);
+  const [newUser, setNewUser] = useState({ name: '', email: '', role: 'user', joinDate: new Date().toISOString().split('T')[0], bookings: 0 });
+  const [newService, setNewService] = useState({ title: '', category: '', badge: 'New', badgeColor: 'blue', rating: 5.0, reviews: 0, price: '', description: '', features: [] });
+  const [allServices, setAllServices] = useState([
     {
       id: 1,
       title: 'Professional Plumbing',
@@ -240,7 +255,7 @@ const Home = ({ userName, onLogout, onNavigate }) => {
       description: 'Professional pool cleaning, maintenance, and repair services for crystal clear water.',
       features: ['Pool cleaning', 'Chemical balance', 'Equipment repair', 'Regular maintenance']
     }
-  ];
+  ]);
 
   const categories = ['All Categories', 'Repair', 'Cleaning', 'Renovation', 'Technology', 'Outdoor', 'General'];
 
@@ -432,22 +447,99 @@ const Home = ({ userName, onLogout, onNavigate }) => {
     }
   };
 
+  // Admin functions
+  const handleDeleteUser = (userId) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      setUsers(prev => prev.filter(user => user.id !== userId));
+    }
+  };
+
+  const handleDeleteService = (serviceId) => {
+    if (window.confirm('Are you sure you want to delete this service?')) {
+      setAllServices(prev => prev.filter(service => service.id !== serviceId));
+    }
+  };
+
+  const handleUpdateService = (serviceId, field, value) => {
+    setAllServices(prev => prev.map(service =>
+      service.id === serviceId ? { ...service, [field]: value } : service
+    ));
+  };
+
+  const handleEditUser = (user) => {
+    setEditingUser({ ...user });
+    setShowEditUserModal(true);
+  };
+
+  const handleSaveUser = () => {
+    setUsers(prev => prev.map(user => 
+      user.id === editingUser.id ? editingUser : user
+    ));
+    setShowEditUserModal(false);
+    setEditingUser(null);
+  };
+
+  const handleAddUser = () => {
+    const newId = Math.max(...users.map(u => u.id), 0) + 1;
+    setUsers(prev => [...prev, { ...newUser, id: newId }]);
+    setShowAddUserModal(false);
+    setNewUser({ name: '', email: '', role: 'user', joinDate: new Date().toISOString().split('T')[0], bookings: 0 });
+  };
+
+  const handleEditService = (service) => {
+    setEditingService({ ...service });
+    setShowEditServiceModal(true);
+  };
+
+  const handleSaveService = () => {
+    setAllServices(prev => prev.map(service => 
+      service.id === editingService.id ? editingService : service
+    ));
+    setShowEditServiceModal(false);
+    setEditingService(null);
+  };
+
+  const handleAddService = () => {
+    const newId = Math.max(...allServices.map(s => s.id), 0) + 1;
+    setAllServices(prev => [...prev, { 
+      ...newService, 
+      id: newId,
+      image: '/service-default.jpg',
+      features: newService.features.filter(f => f.trim() !== '')
+    }]);
+    setShowAddServiceModal(false);
+    setNewService({ title: '', category: '', badge: 'New', badgeColor: 'blue', rating: 5.0, reviews: 0, price: '', description: '', features: [] });
+  };
+
   const displayServices = currentPage === 'service' ? allServices : services;
 
   return (
     <div className="home-wrapper">
       {/* Navigation Header */}
-      <header className="main-header">
+      <header className={`main-header ${currentPage === 'admin' ? 'header-admin' : ''}`}>
         <div className="header-container">
           <div className="logo-section">
             <h1 className="brand-logo">HomeServe</h1>
           </div>
           
           <nav className="main-nav">
-            <a href="#home" className={currentPage === 'home' ? 'nav-link active' : 'nav-link'} onClick={() => handleNavigation('home')}>Home</a>
-            <a href="#service" className={currentPage === 'service' ? 'nav-link active' : 'nav-link'} onClick={() => handleNavigation('service')}>Service</a>
-            <a href="#bookings" className={currentPage === 'bookings' ? 'nav-link active' : 'nav-link'} onClick={() => handleNavigation('bookings')}>My Bookings</a>
-            <a href="#about" className={currentPage === 'about' ? 'nav-link active' : 'nav-link'} onClick={() => handleNavigation('about')}>About Us</a>
+            <a href="#home" className={currentPage === 'home' ? 'nav-link active' : 'nav-link'} onClick={() => handleNavigation('home')}>
+              <span>🏠</span> Home
+            </a>
+            <a href="#service" className={currentPage === 'service' ? 'nav-link active' : 'nav-link'} onClick={() => handleNavigation('service')}>
+              <span>🛠️</span> Services
+            </a>
+            <a href="#bookings" className={currentPage === 'bookings' ? 'nav-link active' : 'nav-link'} onClick={() => handleNavigation('bookings')}>
+              <span>📅</span> My Bookings
+            </a>
+            <a href="#about" className={currentPage === 'about' ? 'nav-link active' : 'nav-link'} onClick={() => handleNavigation('about')}>
+              <span>ℹ️</span> About Us
+            </a>
+            {userRole === 'admin' && (
+              <a href="#admin" className={`nav-link admin-link ${currentPage === 'admin' ? 'active' : ''}`} onClick={() => handleNavigation('admin')}>
+                <span>⚙️</span> Admin Dashboard
+              </a>
+            )}
           </nav>
 
           <div className="header-actions">
@@ -464,8 +556,8 @@ const Home = ({ userName, onLogout, onNavigate }) => {
                   <div className="profile-info">
                     <div className="profile-avatar">{userName ? userName.charAt(0).toUpperCase() : 'G'}</div>
                     <div className="profile-details">
-                      <div className="profile-name">{userName || 'Gnanesh'}</div>
-                      <div className="profile-email">gnanesh@gmail.com</div>
+                      <div className="profile-name">{userName || 'User'}</div>
+                      <div className="profile-email">{userEmail}</div>
                     </div>
                   </div>
                   <div className="dropdown-divider"></div>
@@ -929,8 +1021,262 @@ const Home = ({ userName, onLogout, onNavigate }) => {
 
 
 
+      {/* Admin Dashboard */}
+      {currentPage === 'admin' && userRole === 'admin' && (
+        <section className="admin-dashboard">
+          <div className="admin-container">
+            <div className="admin-header">
+              <h1 className="admin-title">Admin Dashboard</h1>
+              <p className="admin-subtitle">Manage users, services, and bookings</p>
+            </div>
 
+            {/* Admin Navigation Tabs */}
+            <div className="admin-tabs">
+              <button 
+                className={`admin-tab ${adminView === 'overview' ? 'active' : ''}`}
+                onClick={() => setAdminView('overview')}
+              >
+                📊 Overview
+              </button>
+              <button 
+                className={`admin-tab ${adminView === 'users' ? 'active' : ''}`}
+                onClick={() => setAdminView('users')}
+              >
+                👥 Users
+              </button>
+              <button 
+                className={`admin-tab ${adminView === 'services' ? 'active' : ''}`}
+                onClick={() => setAdminView('services')}
+              >
+                🛠️ Services
+              </button>
+              <button 
+                className={`admin-tab ${adminView === 'bookings' ? 'active' : ''}`}
+                onClick={() => setAdminView('bookings')}
+              >
+                📋 Bookings
+              </button>
+            </div>
 
+            {/* Overview Section */}
+            {adminView === 'overview' && (
+              <div className="admin-overview">
+                <div className="stats-grid">
+                  <div className="stat-card">
+                    <div className="stat-icon">👥</div>
+                    <div className="stat-content">
+                      <h3 className="stat-number">{users.length}</h3>
+                      <p className="stat-label">Total Users</p>
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-icon">🛠️</div>
+                    <div className="stat-content">
+                      <h3 className="stat-number">{allServices.length}</h3>
+                      <p className="stat-label">Total Services</p>
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-icon">📋</div>
+                    <div className="stat-content">
+                      <h3 className="stat-number">{bookedServices.length}</h3>
+                      <p className="stat-label">Total Bookings</p>
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-icon">💰</div>
+                    <div className="stat-content">
+                      <h3 className="stat-number">$12.5K</h3>
+                      <p className="stat-label">Revenue</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="recent-activity">
+                  <h2 className="section-heading">Recent Activity</h2>
+                  <div className="activity-list">
+                    <div className="activity-item">
+                      <div className="activity-icon">📋</div>
+                      <div className="activity-content">
+                        <p className="activity-text"><strong>New booking</strong> from {bookedServices.length > 0 ? bookedServices[bookedServices.length - 1].bookingDetails.fullName : 'Customer'}</p>
+                        <span className="activity-time">2 minutes ago</span>
+                      </div>
+                    </div>
+                    <div className="activity-item">
+                      <div className="activity-icon">👤</div>
+                      <div className="activity-content">
+                        <p className="activity-text"><strong>New user</strong> registered: {users.length > 0 ? users[users.length - 1].name : 'User'}</p>
+                        <span className="activity-time">15 minutes ago</span>
+                      </div>
+                    </div>
+                    <div className="activity-item">
+                      <div className="activity-icon">⭐</div>
+                      <div className="activity-content">
+                        <p className="activity-text"><strong>5-star review</strong> received for Professional Plumbing</p>
+                        <span className="activity-time">1 hour ago</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Users Management */}
+            {adminView === 'users' && (
+              <div className="admin-users">
+                <div className="table-header">
+                  <h2 className="section-heading">User Management</h2>
+                  <button className="btn-add" onClick={() => setShowAddUserModal(true)}>+ Add User</button>
+                </div>
+                <div className="admin-table-wrapper">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Join Date</th>
+                        <th>Bookings</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.map(user => (
+                        <tr key={user.id}>
+                          <td>#{user.id}</td>
+                          <td className="user-name">
+                            <div className="user-avatar">{user.name.charAt(0)}</div>
+                            {user.name}
+                          </td>
+                          <td>{user.email}</td>
+                          <td><span className={`role-badge ${user.role}`}>{user.role}</span></td>
+                          <td>{user.joinDate}</td>
+                          <td>{user.bookings}</td>
+                          <td>
+                            <button className="btn-action edit" onClick={() => handleEditUser(user)}>✏️</button>
+                            <button className="btn-action delete" onClick={() => handleDeleteUser(user.id)}>🗑️</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Services Management */}
+            {adminView === 'services' && (
+              <div className="admin-services">
+                <div className="admin-header">
+                  <h1 className="admin-title">Service Management</h1>
+                  <p className="admin-subtitle">Add, edit, and manage all services from one place</p>
+                </div>
+                <div className="admin-content">
+                  <div className="table-header">
+                    <div className="search-stats">
+                      <h2 className="section-heading">All Services ({allServices.length})</h2>
+                    </div>
+                    <button className="btn-add" onClick={() => setShowAddServiceModal(true)}>
+                      <span>+</span> Add New Service
+                    </button>
+                  </div>
+                  <div className="services-grid-admin">
+                    {allServices.map(service => (
+                      <div key={service.id} className="service-card-admin">
+                        <div className="service-card-header">
+                          <span className={`badge-admin ${service.badgeColor}`}>{service.badge}</span>
+                          <button 
+                            className="btn-delete-service" 
+                            onClick={() => handleDeleteService(service.id)}
+                            title="Delete Service"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                        <h3 className="service-title-admin">{service.title}</h3>
+                        <p className="service-category-admin">{service.category}</p>
+                        <div className="service-stats-admin">
+                          <span title="Rating">⭐ {service.rating}</span>
+                          <span title="Review Count">💬 {service.reviews} reviews</span>
+                        </div>
+                        <p className="service-price-admin">{service.price}</p>
+                        <div className="service-actions-admin">
+                          <button 
+                            className="btn-edit-service" 
+                            onClick={() => handleEditService(service)}
+                            title="Edit Service Details"
+                          >
+                            <span>✏️</span> Edit
+                          </button>
+                          <button 
+                            className="btn-view-service-admin" 
+                            onClick={() => { setSelectedService(service); setShowDetailModal(true); }}
+                            title="View Service Details"
+                          >
+                            <span>👁️</span> View
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Bookings Management */}
+            {adminView === 'bookings' && (
+              <div className="admin-bookings">
+                <div className="table-header">
+                  <h2 className="section-heading">Bookings Management</h2>
+                  <button className="btn-add">📊 Export</button>
+                </div>
+                {bookedServices.length === 0 ? (
+                  <div className="empty-state-admin">
+                    <div className="empty-icon">📋</div>
+                    <h3>No Bookings Yet</h3>
+                    <p>Bookings will appear here when users make service requests</p>
+                  </div>
+                ) : (
+                  <div className="admin-table-wrapper">
+                    <table className="admin-table">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Customer</th>
+                          <th>Service</th>
+                          <th>Date</th>
+                          <th>Time</th>
+                          <th>Status</th>
+                          <th>Urgency</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {bookedServices.map(booking => (
+                          <tr key={booking.id}>
+                            <td>#{booking.id}</td>
+                            <td>{booking.bookingDetails.fullName}</td>
+                            <td>{booking.service.title}</td>
+                            <td>{booking.scheduledDate}</td>
+                            <td>{booking.scheduledTime}</td>
+                            <td><span className="status-badge scheduled">{booking.status}</span></td>
+                            <td><span className={`urgency-badge-admin ${booking.bookingDetails.urgency}`}>{booking.bookingDetails.urgency}</span></td>
+                            <td>
+                              <button className="btn-action view" onClick={() => handleViewBookingDetails(booking)}>👁️</button>
+                              <button className="btn-action delete" onClick={() => handleCancelBooking(booking.id)}>🗑️</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* About Us Page */}
       {currentPage === 'about' && (
@@ -1644,6 +1990,515 @@ const Home = ({ userName, onLogout, onNavigate }) => {
                 </button>
                 <button className="btn-cancel-booking" onClick={() => handleCancelBooking(selectedBooking.id)}>
                   Cancel Booking
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {showEditUserModal && editingUser && (
+        <div className="modal-overlay" onClick={() => setShowEditUserModal(false)}>
+          <div className="modal-content premium-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header gradient-header">
+              <div className="header-content">
+                <h2>Edit User Profile</h2>
+                <p className="modal-subtitle">Update user information and settings</p>
+              </div>
+              <button className="modal-close-btn" onClick={() => setShowEditUserModal(false)}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </button>
+            </div>
+            
+            <div className="modal-body premium-form">
+              {/* Personal Information Section */}
+              <div className="form-section">
+                <h3 className="section-title">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 10a4 4 0 100-8 4 4 0 000 8zm0 2c-4.42 0-8 1.79-8 4v2h16v-2c0-2.21-3.58-4-8-4z" fill="currentColor"/>
+                  </svg>
+                  Personal Information
+                </h3>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">
+                      <span className="label-icon">👤</span>
+                      Full Name
+                    </label>
+                    <input 
+                      type="text" 
+                      className="premium-input"
+                      value={editingUser.name}
+                      onChange={(e) => setEditingUser({...editingUser, name: e.target.value})}
+                      placeholder="Enter full name"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">
+                      <span className="label-icon">📧</span>
+                      Email Address
+                    </label>
+                    <input 
+                      type="email" 
+                      className="premium-input"
+                      value={editingUser.email}
+                      onChange={(e) => setEditingUser({...editingUser, email: e.target.value})}
+                      placeholder="Enter email address"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Account Settings Section */}
+              <div className="form-section">
+                <h3 className="section-title">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" fill="currentColor"/>
+                    <path d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" fill="currentColor"/>
+                  </svg>
+                  Account Settings
+                </h3>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">
+                      <span className="label-icon">🔑</span>
+                      User Role
+                    </label>
+                    <select 
+                      className="premium-input"
+                      value={editingUser.role}
+                      onChange={(e) => setEditingUser({...editingUser, role: e.target.value})}
+                    >
+                      <option value="user">User</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">
+                      <span className="label-icon">📅</span>
+                      Join Date
+                    </label>
+                    <input 
+                      type="date" 
+                      className="premium-input"
+                      value={editingUser.joinDate}
+                      onChange={(e) => setEditingUser({...editingUser, joinDate: e.target.value})}
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="modal-actions">
+                <button className="btn-cancel" onClick={() => setShowEditUserModal(false)}>
+                  Cancel
+                </button>
+                <button className="btn-save gradient-btn" onClick={handleSaveUser}>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add User Modal */}
+      {showAddUserModal && (
+        <div className="modal-overlay" onClick={() => setShowAddUserModal(false)}>
+          <div className="modal-content premium-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header gradient-header">
+              <div className="header-content">
+                <h2>Add New User</h2>
+                <p className="modal-subtitle">Create a new user account</p>
+              </div>
+              <button className="modal-close-btn" onClick={() => setShowAddUserModal(false)}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </button>
+            </div>
+            
+            <div className="modal-body premium-form">
+              {/* Basic Information Section */}
+              <div className="form-section">
+                <h3 className="section-title">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 10a4 4 0 100-8 4 4 0 000 8zm0 2c-4.42 0-8 1.79-8 4v2h16v-2c0-2.21-3.58-4-8-4z" fill="currentColor"/>
+                  </svg>
+                  Basic Information
+                </h3>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label required">
+                      <span className="label-icon">👤</span>
+                      Full Name
+                    </label>
+                    <input 
+                      type="text" 
+                      className="premium-input"
+                      value={newUser.name}
+                      onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+                      placeholder="Enter user's full name"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label required">
+                      <span className="label-icon">📧</span>
+                      Email Address
+                    </label>
+                    <input 
+                      type="email" 
+                      className="premium-input"
+                      value={newUser.email}
+                      onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                      placeholder="Enter email address"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Account Settings Section */}
+              <div className="form-section">
+                <h3 className="section-title">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" fill="currentColor"/>
+                    <path d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" fill="currentColor"/>
+                  </svg>
+                  Account Settings
+                </h3>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">
+                      <span className="label-icon">🔑</span>
+                      User Role
+                    </label>
+                    <select 
+                      className="premium-input"
+                      value={newUser.role}
+                      onChange={(e) => setNewUser({...newUser, role: e.target.value})}
+                    >
+                      <option value="user">User</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">
+                      <span className="label-icon">📅</span>
+                      Join Date
+                    </label>
+                    <input 
+                      type="date" 
+                      className="premium-input"
+                      value={newUser.joinDate}
+                      onChange={(e) => setNewUser({...newUser, joinDate: e.target.value})}
+                      readOnly
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-info-box">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 12H9v-2h2v2zm0-4H9V6h2v4z" fill="#3498db"/>
+                </svg>
+                <p>The new user will receive an email with their login credentials.</p>
+              </div>
+              
+              <div className="modal-actions">
+                <button className="btn-cancel" onClick={() => setShowAddUserModal(false)}>
+                  Cancel
+                </button>
+                <button 
+                  className="btn-save gradient-btn" 
+                  onClick={handleAddUser}
+                  disabled={!newUser.name || !newUser.email}
+                >
+                  Add User
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Service Modal */}
+      {showEditServiceModal && editingService && (
+        <div className="modal-overlay" onClick={() => setShowEditServiceModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Edit Service</h2>
+              <p className="modal-subtitle">Update service details</p>
+              <button className="close-modal" onClick={() => setShowEditServiceModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              {/* Basic Information */}
+              <div className="form-section">
+                <h3 className="section-title">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12zm-1-5h2v2H9v-2zm0-6h2v4H9V5z" fill="currentColor"/>
+                  </svg>
+                  Basic Information
+                </h3>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="required">Service Title</label>
+                    <input 
+                      type="text" 
+                      value={editingService.title}
+                      onChange={(e) => setEditingService({...editingService, title: e.target.value})}
+                      placeholder="Enter service title"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="required">Category</label>
+                    <select 
+                      value={editingService.category}
+                      onChange={(e) => setEditingService({...editingService, category: e.target.value})}
+                    >
+                      <option value="Repair">Repair</option>
+                      <option value="Maintenance">Maintenance</option>
+                      <option value="Cleaning">Cleaning</option>
+                      <option value="Installation">Installation</option>
+                      <option value="Renovation">Renovation</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Service Details */}
+              <div className="form-section">
+                <h3 className="section-title">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 12H9v-2h2v2zm0-3H9V7h2v4z" fill="currentColor"/>
+                  </svg>
+                  Service Details
+                </h3>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="required">Price Range</label>
+                    <input 
+                      type="text" 
+                      value={editingService.price}
+                      onChange={(e) => setEditingService({...editingService, price: e.target.value})}
+                      placeholder="e.g., $50 - $200"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Rating</label>
+                    <input 
+                      type="number" 
+                      step="0.1"
+                      min="0"
+                      max="5"
+                      value={editingService.rating}
+                      onChange={(e) => setEditingService({...editingService, rating: parseFloat(e.target.value)})}
+                    />
+                  </div>
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Reviews Count</label>
+                    <input 
+                      type="number" 
+                      value={editingService.reviews}
+                      onChange={(e) => setEditingService({...editingService, reviews: parseInt(e.target.value)})}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Description</label>
+                    <textarea 
+                      value={editingService.description}
+                      onChange={(e) => setEditingService({...editingService, description: e.target.value})}
+                      placeholder="Enter service description"
+                      rows="3"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Badge Settings */}
+              <div className="form-section">
+                <h3 className="section-title">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z" fill="currentColor"/>
+                  </svg>
+                  Badge Settings
+                </h3>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Badge Text</label>
+                    <select
+                      value={editingService.badge}
+                      onChange={(e) => setEditingService({...editingService, badge: e.target.value})}
+                    >
+                      <option value="Popular">Popular</option>
+                      <option value="New">New</option>
+                      <option value="Trending">Trending</option>
+                      <option value="Top Rated">Top Rated</option>
+                      <option value="Best Value">Best Value</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Badge Color</label>
+                    <select 
+                      className="color-select"
+                      value={editingService.badgeColor}
+                      onChange={(e) => setEditingService({...editingService, badgeColor: e.target.value})}
+                    >
+                      <option value="blue">Blue</option>
+                      <option value="green">Green</option>
+                      <option value="red">Red</option>
+                      <option value="yellow">Yellow</option>
+                    </select>
+                    <div className={`badge-preview badge-${editingService.badgeColor}`}>
+                      {editingService.badge}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-actions">
+                <button className="btn-cancel" onClick={() => setShowEditServiceModal(false)}>Cancel</button>
+                <button className="btn-save" onClick={handleSaveService}>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Service Modal */}
+      {showAddServiceModal && (
+        <div className="modal-overlay" onClick={() => setShowAddServiceModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Add New Service</h2>
+              <p className="modal-subtitle">Create a new service offering</p>
+              <button className="close-modal" onClick={() => setShowAddServiceModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              {/* Basic Information Section */}
+              <div className="form-section">
+                <h3 className="section-title">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12zm-1-5h2v2H9v-2zm0-6h2v4H9V5z" fill="currentColor"/>
+                  </svg>
+                  Basic Information
+                </h3>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="required">Service Title</label>
+                    <input 
+                      type="text" 
+                      value={newService.title}
+                      onChange={(e) => setNewService({...newService, title: e.target.value})}
+                      placeholder="Enter service title"
+                    />
+                    <p className="help-text">Choose a clear, descriptive name for your service</p>
+                  </div>
+                  <div className="form-group">
+                    <label className="required">Category</label>
+                    <select 
+                      value={newService.category}
+                      onChange={(e) => setNewService({...newService, category: e.target.value})}
+                    >
+                      <option value="">Select Category</option>
+                      <option value="Repair">Repair</option>
+                      <option value="Maintenance">Maintenance</option>
+                      <option value="Cleaning">Cleaning</option>
+                      <option value="Installation">Installation</option>
+                      <option value="Renovation">Renovation</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pricing and Description */}
+              <div className="form-section">
+                <h3 className="section-title">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 12H9v-2h2v2zm0-3H9V7h2v4z" fill="currentColor"/>
+                  </svg>
+                  Service Details
+                </h3>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="required">Price Range</label>
+                    <input 
+                      type="text" 
+                      value={newService.price}
+                      onChange={(e) => setNewService({...newService, price: e.target.value})}
+                      placeholder="e.g., $50 - $200"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Description</label>
+                    <textarea 
+                      value={newService.description}
+                      onChange={(e) => setNewService({...newService, description: e.target.value})}
+                      placeholder="Enter service description"
+                      rows="3"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Badge Settings */}
+              <div className="form-section">
+                <h3 className="section-title">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z" fill="currentColor"/>
+                  </svg>
+                  Badge Settings
+                </h3>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Badge Text</label>
+                    <select
+                      value={newService.badge}
+                      onChange={(e) => setNewService({...newService, badge: e.target.value})}
+                    >
+                      <option value="New">New</option>
+                      <option value="Popular">Popular</option>
+                      <option value="Featured">Featured</option>
+                      <option value="Top Rated">Top Rated</option>
+                      <option value="Best Value">Best Value</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Badge Color</label>
+                    <select 
+                      className="color-select"
+                      value={newService.badgeColor}
+                      onChange={(e) => setNewService({...newService, badgeColor: e.target.value})}
+                    >
+                      <option value="blue">Blue</option>
+                      <option value="green">Green</option>
+                      <option value="red">Red</option>
+                      <option value="yellow">Yellow</option>
+                    </select>
+                    <div className={`badge-preview badge-${newService.badgeColor}`}>
+                      {newService.badge}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-actions">
+                <button className="btn-cancel" onClick={() => setShowAddServiceModal(false)}>
+                  Cancel
+                </button>
+                <button 
+                  className="btn-save" 
+                  onClick={handleAddService}
+                  disabled={!newService.title || !newService.category || !newService.price}
+                >
+                  Add Service
                 </button>
               </div>
             </div>

@@ -15,6 +15,8 @@ const Auth = ({ onClose, onLoginSuccess }) => {
   // Predefined credentials
   const VALID_EMAIL = 'gnanesh@gmail.com';
   const VALID_PASSWORD = 'Gnanesh';
+  const ADMIN_EMAIL = '2300031699@gmail.com';
+  const ADMIN_PASSWORD = 'gncgncgnc';
 
   const handleChange = (e) => {
     setFormData({
@@ -28,13 +30,18 @@ const Auth = ({ onClose, onLoginSuccess }) => {
     e.preventDefault();
     
     if (isLogin) {
-      // Login validation
-      if (formData.email === VALID_EMAIL && formData.password === VALID_PASSWORD) {
+      // Admin login check
+      if (formData.email === ADMIN_EMAIL && formData.password === ADMIN_PASSWORD) {
+        console.log('Admin login successful!');
+        const adminName = formData.email.split('@')[0]; // Extract name from email
+        onLoginSuccess('admin', adminName, formData.email);
+      }
+      // Regular user login check
+      else if (formData.email === VALID_EMAIL && formData.password === VALID_PASSWORD) {
         console.log('Login successful!');
-        // Call the success callback to navigate to home page
-        onLoginSuccess();
+        onLoginSuccess('user', 'Gnanesh', formData.email);
       } else {
-        setError('Invalid email or password. Please try again.');
+        setError('Invalid credentials! Only registered accounts can login. Please register first or use valid credentials.');
       }
     } else {
       // Register logic
